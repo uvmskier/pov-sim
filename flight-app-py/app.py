@@ -3,12 +3,17 @@ from flasgger import Swagger
 from utils import get_random_int
 
 from opentelemetry import trace
+from opentelemetry import metrics
 
 app = Flask(__name__)
 Swagger(app)
 
 #adding tracing
 tracer = trace.get_tracer("custom_flight.tracer")
+
+#adding metrics
+meter = metrics.get_meter("root_url_meter")
+root_url_counter = meter.create_counter("root_url_counter",description="the number of times the root URL was accessed")
 
 AIRLINES = ["AA", "UA", "DL"]
 
@@ -20,6 +25,7 @@ def home():
       200:
         description: Returns ok
     """
+    root_url_counter.add(1)
     return jsonify({"message": "ok"})
 
 
