@@ -1,6 +1,5 @@
 # Use the official Python 3.8 image as the base image
 FROM python:3.8-slim-buster
-#FROM python:3.12.8-bookworm
 
 # Set the working directory inside the container
 WORKDIR /python-docker

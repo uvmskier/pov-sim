@@ -2,8 +2,13 @@ from flask import Flask, jsonify
 from flasgger import Swagger
 from utils import get_random_int
 
+from opentelemetry import trace
+
 app = Flask(__name__)
 Swagger(app)
+
+#adding tracing
+tracer = trace.get_tracer("custom_flight.tracer")
 
 AIRLINES = ["AA", "UA", "DL"]
 
@@ -57,8 +62,12 @@ def get_flights(airline, err=None):
     """
     if err == "raise":
         raise Exception("Raise test exception")
-    random_int = get_random_int(100, 999)
+    
+    #custom span for step 1.1
+    with tracer.start_as_current_span("generate_random_int_for_flight_number") as span:
+        random_int = get_random_int(100, 999)
+        span.set_attribute("random_int", random_int)
+        span.set_attribute("airline",airline)
     return jsonify({airline: [random_int]})
-
 if __name__ == "__main__":
     app.run(debug=True)
