@@ -5,6 +5,7 @@ from utils import get_random_int
 from opentelemetry import trace
 from opentelemetry import metrics
 
+
 app = Flask(__name__)
 Swagger(app)
 
@@ -14,6 +15,7 @@ tracer = trace.get_tracer("custom_flight.tracer")
 #adding metrics
 meter = metrics.get_meter("root_url_meter")
 root_url_counter = meter.create_counter("root_url_counter",description="the number of times the root URL was accessed")
+flight_number_histogram = meter.create_histogram(name="flight_numbers",description="flight number histogram")
 
 AIRLINES = ["AA", "UA", "DL"]
 
@@ -74,6 +76,9 @@ def get_flights(airline, err=None):
         random_int = get_random_int(100, 999)
         span.set_attribute("random_int", random_int)
         span.set_attribute("airline",airline)
+    
+    flight_number_histogram.record(random_int,attributes={"airline": airline})
+
     return jsonify({airline: [random_int]})
 if __name__ == "__main__":
     app.run(debug=True)
